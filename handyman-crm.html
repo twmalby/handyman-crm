@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM B2B – Alby</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #f0f4f8; color: #222; font-size: 14px; }
+
+header { background: #1a3a2a; color: #fff; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+header h1 { font-size: 1.2em; }
+header h1 span { font-size: 0.7em; font-weight: normal; opacity: 0.7; display: block; }
+.header-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.hbtn { padding: 7px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: bold; }
+.hbtn-save { background: #22c55e; color: #fff; }
+.hbtn-load { background: #f59e0b; color: #fff; }
+.hbtn-new  { background: #fff; color: #1a3a2a; }
+.hbtn:hover { opacity: 0.85; }
+
+.container { max-width: 1100px; margin: 20px auto; padding: 0 14px; }
+
+.search-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-bar input { flex: 1; min-width: 200px; padding: 9px 14px; border: 1px solid #ccd; border-radius: 7px; font-size: 0.95em; background: #fff; }
+.search-bar select { padding: 9px 12px; border: 1px solid #ccd; border-radius: 7px; background: #fff; }
+.stat { background: #fff; border-radius: 7px; padding: 8px 16px; font-size: 0.82em; color: #555; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+.stat strong { color: #1a3a2a; font-size: 1.1em; }
+
+.table-wrap { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: #1a3a2a; color: #fff; }
+th { padding: 10px 12px; text-align: left; font-size: 0.82em; white-space: nowrap; cursor: pointer; user-select: none; }
+th:hover { background: #0f2218; }
+td { padding: 9px 12px; border-bottom: 1px solid #eef; font-size: 0.88em; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f0faf4; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75em; font-weight: bold; }
+.tag-wash  { background: #dbeafe; color: #1e3a5f; }
+.tag-handy { background: #dcfce7; color: #14532d; }
+.tag-clean { background: #fef9c3; color: #78350f; }
+.tag-other { background: #f1f5f9; color: #334155; }
+.btn-edit { background: #e0f2fe; color: #0369a1; border: none; border-radius: 5px; padding: 4px 10px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
+.btn-del  { background: #fee2e2; color: #b91c1c; border: none; border-radius: 5px; padding: 4px 10px; cursor: pointer; font-size: 0.8em; font-weight: bold; margin-left: 4px; }
+.btn-edit:hover { background: #bae6fd; }
+.btn-del:hover  { background: #fca5a5; }
+.empty { text-align: center; padding: 40px; color: #aaa; font-size: 1em; }
+
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
+.overlay.show { display: flex; }
+.modal { background: #fff; border-radius: 12px; padding: 28px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.modal h2 { color: #1a3a2a; margin-bottom: 20px; font-size: 1.1em; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid .full { grid-column: 1/-1; }
+.form-group label { display: block; font-size: 0.78em; font-weight: bold; color: #555; margin-bottom: 4px; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 8px 11px; border: 1px solid #ccd; border-radius: 6px; font-size: 0.92em; background: #fafbfc; font-family: Arial, sans-serif;
+}
+.form-group textarea { resize: vertical; min-height: 70px; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #1a3a2a; background: #fff; }
+.modal-btns { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+.btn-save-c { background: #1a3a2a; color: #fff; border: none; padding: 10px 24px; border-radius: 7px; cursor: pointer; font-size: 0.95em; font-weight: bold; }
+.btn-cancel { background: #f1f5f9; color: #555; border: none; padding: 10px 20px; border-radius: 7px; cursor: pointer; font-size: 0.95em; }
+.btn-save-c:hover { background: #0f2218; }
+
+.toast { position: fixed; bottom: 24px; right: 24px; background: #1a3a2a; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 0.88em; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: none; z-index: 200; }
+.toast.show { display: block; animation: fadein 0.3s; }
+@keyframes fadein { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: none; } }
+
+.file-status { font-size: 0.75em; color: #22c55e; margin-left: 10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🚗 CRM B2B
+    <span>Clients & Prospects</span>
+  </h1>
+  <div class="header-btns">
+    <span class="file-status" id="file-status"></span>
+    <button class="hbtn hbtn-load" onclick="loadFile()">📂 Load .txt</button>
+    <button class="hbtn hbtn-save" onclick="saveFile()">💾 Save .txt</button>
+    <button class="hbtn hbtn-new" onclick="openModal()">+ New contact</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="search-bar">
+    <input type="text" id="search" placeholder="🔍 Search by name, company, area..." oninput="renderTable()">
+    <select id="filter-settore" onchange="renderTable()">
+      <option value="">All</option>
+      <option value="Car Wash">Car Wash</option>
+      <option value="Handyman">Handyman</option>
+      <option value="Cleaning">Cleaning</option>
+      <option value="Other">Other</option>
+    </select>
+    <div class="stat">Contacts: <strong id="count">0</strong></div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortBy('nome')">Name ↕</th>
+          <th onclick="sortBy('azienda')">Company ↕</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th onclick="sortBy('zona')">Area ↕</th>
+          <th onclick="sortBy('settore')">Sector ↕</th>
+          <th onclick="sortBy('stato')">Status ↕</th>
+          <th>Notes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeIfOutside(event)">
+  <div class="modal" id="modal">
+    <h2 id="modal-title">New contact</h2>
+    <div class="form-grid">
+      <div class="form-group"><label>Name *</label><input type="text" id="f-nome" placeholder="John Smith"></div>
+      <div class="form-group"><label>Company</label><input type="text" id="f-azienda" placeholder="Smith & Sons Ltd"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="f-email" placeholder="john@example.com"></div>
+      <div class="form-group"><label>Phone</label><input type="text" id="f-tel" placeholder="+1 555 1234567"></div>
+      <div class="form-group"><label>Area</label><input type="text" id="f-zona" placeholder="Brooklyn, NY"></div>
+      <div class="form-group"><label>Sector</label>
+        <select id="f-settore">
+          <option value="Car Wash">Car Wash</option>
+          <option value="Handyman">Handyman</option>
+          <option value="Cleaning">Cleaning</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Status</label>
+        <select id="f-stato">
+          <option value="Prospect">Prospect</option>
+          <option value="Contacted">Contacted</option>
+          <option value="Negotiating">Negotiating</option>
+          <option value="Client">Client</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Website</label><input type="text" id="f-sito" placeholder="www.example.com"></div>
+      <div class="form-group full"><label>Notes</label><textarea id="f-note" placeholder="Remarks, interests, last contact..."></textarea></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save-c" onclick="saveContact()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer style="text-align:center;padding:18px;font-size:0.78em;color:#aaa;margin-top:10px;">By Alby</footer>
+
+<script>
+let contacts = [];
+let editingId = null;
+let sortKey = 'nome';
+let sortAsc = true;
+let fileHandle = null;
+
+function init(){
+  const saved = localStorage.getItem('crm_en_contacts');
+  if(saved) try { contacts = JSON.parse(saved); } catch(e){}
+  renderTable();
+}
+
+function saveLocal(){
+  localStorage.setItem('crm_en_contacts', JSON.stringify(contacts));
+}
+
+async function saveFile(){
+  const data = JSON.stringify(contacts, null, 2);
+  try {
+    if(!fileHandle){
+      fileHandle = await window.showSaveFilePicker({
+        suggestedName: 'crm_contacts.txt',
+        types: [{ description: 'Text file', accept: {'text/plain': ['.txt']} }]
+      });
+    }
+    const writable = await fileHandle.createWritable();
+    await writable.write(data);
+    await writable.close();
+    document.getElementById('file-status').textContent = '✓ Saved: '+fileHandle.name;
+    toast('File saved: '+fileHandle.name);
+  } catch(e){
+    if(e.name !== 'AbortError'){
+      const blob = new Blob([data], {type:'text/plain'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'crm_contacts.txt';
+      a.click();
+      toast('Downloaded successfully');
+    }
+  }
+}
+
+async function loadFile(){
+  try {
+    [fileHandle] = await window.showOpenFilePicker({
+      types: [{ description: 'Text file', accept: {'text/plain': ['.txt']} }]
+    });
+    const file = await fileHandle.getFile();
+    const text = await file.text();
+    contacts = JSON.parse(text);
+    saveLocal();
+    renderTable();
+    document.getElementById('file-status').textContent = '✓ Loaded: '+fileHandle.name;
+    toast('Loaded '+contacts.length+' contacts from '+fileHandle.name);
+  } catch(e){
+    if(e.name !== 'AbortError') toast('Error: invalid file');
+  }
+}
+
+function openModal(id=null){
+  editingId = id;
+  document.getElementById('modal-title').textContent = id ? 'Edit contact' : 'New contact';
+  const fields = ['nome','azienda','email','tel','zona','settore','stato','sito','note'];
+  if(id){
+    const c = contacts.find(x=>x.id===id);
+    fields.forEach(f => document.getElementById('f-'+f).value = c[f]||'');
+  } else {
+    fields.forEach(f => document.getElementById('f-'+f).value = '');
+    document.getElementById('f-settore').value = 'Car Wash';
+    document.getElementById('f-stato').value = 'Prospect';
+  }
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('f-nome').focus();
+}
+
+function closeModal(){ document.getElementById('overlay').classList.remove('show'); }
+function closeIfOutside(e){ if(e.target.id==='overlay') closeModal(); }
+
+function saveContact(){
+  const nome = document.getElementById('f-nome').value.trim();
+  if(!nome){ alert('Please enter at least a name!'); return; }
+  const c = {
+    id: editingId || Date.now(),
+    nome,
+    azienda: document.getElementById('f-azienda').value.trim(),
+    email:   document.getElementById('f-email').value.trim(),
+    tel:     document.getElementById('f-tel').value.trim(),
+    zona:    document.getElementById('f-zona').value.trim(),
+    settore: document.getElementById('f-settore').value,
+    stato:   document.getElementById('f-stato').value,
+    sito:    document.getElementById('f-sito').value.trim(),
+    note:    document.getElementById('f-note').value.trim(),
+    data:    editingId ? contacts.find(x=>x.id===editingId).data : new Date().toLocaleDateString('en-GB'),
+  };
+  if(editingId){ contacts = contacts.map(x=>x.id===editingId?c:x); }
+  else { contacts.push(c); }
+  saveLocal();
+  renderTable();
+  closeModal();
+  toast(editingId ? 'Contact updated' : 'Contact added');
+}
+
+function deleteContact(id){
+  if(!confirm('Delete this contact?')) return;
+  contacts = contacts.filter(x=>x.id!==id);
+  saveLocal();
+  renderTable();
+  toast('Contact deleted');
+}
+
+function renderTable(){
+  const q = document.getElementById('search').value.toLowerCase();
+  const fs = document.getElementById('filter-settore').value;
+  let list = contacts.filter(c=>{
+    const match = !q || [c.nome,c.azienda,c.zona,c.email,c.tel,c.note].join(' ').toLowerCase().includes(q);
+    const sect = !fs || c.settore===fs;
+    return match && sect;
+  });
+  list.sort((a,b)=>{
+    const va=(a[sortKey]||'').toLowerCase(), vb=(b[sortKey]||'').toLowerCase();
+    return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+  document.getElementById('count').textContent = list.length;
+  const tagCls = {'Car Wash':'tag-wash','Handyman':'tag-handy','Cleaning':'tag-clean','Other':'tag-other'};
+  const statoCls = {Client:'#dcfce7',Prospect:'#f1f5f9',Negotiating:'#fef9c3',Contacted:'#e0f2fe',Inactive:'#fee2e2'};
+  document.getElementById('tbody').innerHTML = list.length ? list.map(c=>`
+    <tr>
+      <td><strong>${c.nome}</strong><br><small style="color:#888">${c.data||''}</small></td>
+      <td>${c.azienda||'—'}</td>
+      <td>${c.email ? `<a href="mailto:${c.email}" style="color:#1a3a2a">${c.email}</a>` : '—'}</td>
+      <td>${c.tel||'—'}</td>
+      <td>${c.zona||'—'}</td>
+      <td><span class="tag ${tagCls[c.settore]||'tag-other'}">${c.settore||'—'}</span></td>
+      <td><span style="background:${statoCls[c.stato]||'#f1f5f9'};padding:2px 8px;border-radius:10px;font-size:0.78em;font-weight:bold">${c.stato||'—'}</span></td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.note||''}">${c.note||'—'}</td>
+      <td>
+        <button class="btn-edit" onclick="openModal(${c.id})">✏️</button>
+        <button class="btn-del"  onclick="deleteContact(${c.id})">🗑</button>
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="9" class="empty">No contacts found. Click "+ New contact" to get started!</td></tr>`;
+}
+
+function sortBy(key){
+  if(sortKey===key) sortAsc=!sortAsc; else { sortKey=key; sortAsc=true; }
+  renderTable();
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') closeModal();
+  if(e.key==='n' && !document.getElementById('overlay').classList.contains('show') && document.activeElement.tagName!=='INPUT') openModal();
+});
+
+init();
+</script>
+</body>
+</html>
